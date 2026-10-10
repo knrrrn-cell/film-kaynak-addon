@@ -27,8 +27,23 @@ builder.defineStreamHandler(async ({ type, id }) => {
       throw new Error(`Cinemeta HTTP ${response.status}`);
     }
 
-    const data = await response.json();
-    const meta = data.meta || {};
+   const data = await response.json();
+const meta = data.meta || {};
+
+const titleResponse = await fetch(
+  `https://v3-cinemeta.strem.io/meta/${type}/${imdbId}.json`
+);
+const titleData = await titleResponse.json();
+
+const titles = [
+  meta.name,
+  meta.originalName,
+  titleData.meta?.name,
+  ...(meta.aliases || []),
+  ...(titleData.meta?.aliases || [])
+].filter(Boolean);
+
+const uniqueTitles = [...new Set(titles)];
 
     const titles = [
       meta.name,
