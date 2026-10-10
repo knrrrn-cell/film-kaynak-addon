@@ -1,31 +1,27 @@
 
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 
-const builder = new addonBuilder({
+const manifest = {
   id: "community.film-kaynak-addon",
-  version: "1.0.1",
+  version: "1.0.2",
   name: "Film Kaynak Tarayici",
-  description: "Kisisel kaynak tarayicim",
+  description: "Otomatik film ve dizi kaynak tarayici",
   resources: ["stream"],
-  types: ["movie"],
+  types: ["movie", "series"],
   catalogs: [],
   idPrefixes: ["tt"]
-});
+};
 
-builder.defineStreamHandler(({ type, id }) => {
-  console.log("Stream istegi:", type, id);
+const builder = new addonBuilder(manifest);
 
-  if (type === "movie" && id === "tt1254207") {
-    return {
-      streams: [{
-        name: "Test Kaynagi",
-        title: "Ornek video",
-        url: "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4"
-      }]
-    };
-  }
+builder.defineStreamHandler(async ({ type, id }) => {
+  console.log("Film/dizi turu:", type);
+  console.log("Stremio kimligi:", id);
 
-  return { streams: [] };
+  // Gercek site tarayicilari sonraki asamada eklenecek.
+  return {
+    streams: []
+  };
 });
 
 serveHTTP(builder.getInterface(), {
