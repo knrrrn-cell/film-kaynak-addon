@@ -3,9 +3,9 @@ const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 
 const manifest = {
   id: "community.film-kaynak-addon",
-  version: "1.0.3",
-  name: "Film Kaynak Tarayici",
-  description: "Film ve dizi kaynak tarayici",
+  version: "1.1.0",
+  name: "Film Kaynak Tarayıcı",
+  description: "Film ve dizi arama altyapısı",
   resources: ["stream"],
   types: ["movie", "series"],
   catalogs: [],
@@ -16,11 +16,8 @@ const builder = new addonBuilder(manifest);
 
 builder.defineStreamHandler(async ({ type, id }) => {
   try {
-    // Dizi bolumlerinde kimlik tt...:sezon:bolum olabilir.
-    const imdbId = id.split(":")[0];
-
-    console.log("Tur:", type);
-    console.log("IMDb:", imdbId);
+    const parts = id.split(":");
+    const imdbId = parts[0];
 
     const response = await fetch(
       `https://v3-cinemeta.strem.io/meta/${type}/${imdbId}.json`
@@ -31,15 +28,25 @@ builder.defineStreamHandler(async ({ type, id }) => {
     }
 
     const data = await response.json();
-    const title = data.meta?.name || "Film adi bulunamadi";
+    const meta = data.meta || {};
 
-    console.log("Film/dizi adi:", title);
+    const titles = [
+      meta.name,
+      meta.originalName,
+      ...(meta.aliases || [])
+    ].filter(Boolean);
+
+    const uniqueTitles = [...new Set(titles)];
+
+    console.log("Tür:", type);
+    console.log("IMDb:", imdbId);
+    console.log("Aranacak isimler:", uniqueTitles);
     console.log("Tam kimlik:", id);
 
-    // Henuz gercek kaynak taramasi eklenmedi.
+    // Bu aşamada henüz doğrulanmış yayın kaynağı yok.
     return { streams: [] };
   } catch (error) {
-    console.error("Kaynak istegi hatasi:", error.message);
+    console.error("İstek hatası:", error.message);
     return { streams: [] };
   }
 });
