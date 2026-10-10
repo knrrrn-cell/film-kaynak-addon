@@ -1,27 +1,33 @@
 
 const { addonBuilder, serveHTTP } = require("stremio-addon-sdk");
 
-const manifest = {
+const builder = new addonBuilder({
   id: "community.film-kaynak-addon",
-  version: "1.0.0",
+  version: "1.0.1",
   name: "Film Kaynak Tarayici",
-  description: "Kisisel film ve dizi kaynak eklentim",
+  description: "Kisisel kaynak tarayicim",
   resources: ["stream"],
-  types: ["movie", "series"],
+  types: ["movie"],
   catalogs: [],
   idPrefixes: ["tt"]
-};
+});
 
-const builder = new addonBuilder(manifest);
+builder.defineStreamHandler(({ type, id }) => {
+  console.log("Stream istegi:", type, id);
 
-builder.defineStreamHandler(async ({ type, id }) => {
-  console.log("Istek:", type, id);
+  if (type === "movie" && id === "tt1254207") {
+    return {
+      streams: [{
+        name: "Test Kaynagi",
+        title: "Ornek video",
+        url: "http://distribution.bbb3d.renderfarming.net/video/mp4/bbb_sunflower_1080p_30fps_normal.mp4"
+      }]
+    };
+  }
 
-  // Simdilik kaynak tarama sistemi eklenmedi.
-  // Gercek kaynaklari sonraki adimda ekleyecegiz.
   return { streams: [] };
 });
 
-const port = process.env.PORT || 7000;
-
-serveHTTP(builder.getInterface(), { port });
+serveHTTP(builder.getInterface(), {
+  port: process.env.PORT || 7000
+});
